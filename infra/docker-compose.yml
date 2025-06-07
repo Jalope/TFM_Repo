@@ -8,7 +8,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - metabase_data:/metabase.db
+      - tfm-bienvenida_metabase_data:/metabase.db
     depends_on:
       - mongo
     networks:
@@ -25,7 +25,7 @@ services:
     ports:
       - "27250:27017"
     volumes:
-      - mongo_data:/data/db
+      - tfm-bienvenida_mongo_data:/data/db
     networks:
       - backend
 
@@ -97,8 +97,10 @@ services:
 
 
 volumes:
-  metabase_data:
-  mongo_data:
+  tfm-bienvenida_metabase_data:
+    external: true
+  tfm-bienvenida_mongo_data:
+    external: true
 
 networks:
   backend:

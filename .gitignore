@@ -1,0 +1,5 @@
+# Excluir todos los CSV
+*.csv
+
+# Excluir checkpoints de Jupyter Notebook
+**/.ipynb_checkpoints/
