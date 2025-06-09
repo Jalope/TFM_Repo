@@ -3,3 +3,6 @@
 
 # Excluir checkpoints de Jupyter Notebook
 **/.ipynb_checkpoints/
+
+# Excluir archivos de salida de la carpeta data
+/data/
