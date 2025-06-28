@@ -93,8 +93,82 @@ services:
       - ./shared:/data
     networks:
       - backend
+    # Construcción común para los ETL
+  etl_base:
+    build:
+      context: ./etl
+    image: tfm_etl:latest
+    networks:
+      - backend
 
+  # 1. Extractor de la tabla 4583 → Kafka
+  extract_ine_4583:
+    image: tfm_etl:latest
+    container_name: tfm_extract_ine_4583
+    depends_on:
+      - kafka
+    command: ["python", "INE/4583/extract_ine_4583.py"]
+    restart: "no"                   # solo se ejecuta una vez al levantar
+    networks:
+      - backend
 
+  # 2. Transformador de la tabla 4583 (Kafka raw → Kafka processed)
+  transform_ine_4583:
+    image: tfm_etl:latest
+    container_name: tfm_transform_ine_4583
+    depends_on:
+      - kafka
+    command: ["python", "INE/4583/transform_ine_4583.py"]
+    restart: unless-stopped         # consumidor continuo
+    networks:
+      - backend
+
+  # 3. Cargador de la tabla 4583 en MongoDB
+  load_ine_4583:
+    image: tfm_etl:latest
+    environment:
+      - MONGO_URI=mongodb://jalope:admin@mongo:27017/tfm_db?authSource=admin&directConnection=true
+    container_name: tfm_load_ine_4583
+    depends_on:
+      - kafka
+      - mongo
+    command: ["python", "INE/4583/load_ine_4583.py"]
+    restart: unless-stopped         # consumidor continuo
+    networks:
+      - backend
+  
+  extract_gov10a_exp:
+    image: tfm_etl:latest
+    container_name: tfm_extract_gov10a_exp
+    depends_on:
+      - kafka
+    command: ["python", "EUROSTAT/gov10a_exp/extract_gov10a_exp.py"]
+    restart: "no"
+    networks:
+      - backend
+
+  transform_gov10a_exp:
+    image: tfm_etl:latest
+    container_name: tfm_transform_gov10a_exp
+    depends_on:
+      - kafka
+    command: ["python", "EUROSTAT/gov10a_exp/transform_gov10a_exp.py"]
+    restart: unless-stopped
+    networks:
+      - backend
+
+  load_gov10a_exp:
+    image: tfm_etl:latest
+    environment:
+      - MONGO_URI=mongodb://jalope:admin@mongo:27017/tfm_db?authSource=admin&directConnection=true
+    container_name: tfm_load_gov10a_exp
+    depends_on:
+      - kafka
+      - mongo
+    command: ["python", "EUROSTAT/gov10a_exp/load_gov10a_exp.py"]
+    restart: unless-stopped
+    networks:
+      - backend
 
 volumes:
   tfm-bienvenida_metabase_data:
