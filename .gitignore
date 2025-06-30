@@ -6,4 +6,6 @@
 
 # Excluir archivos de salida de la carpeta data
 /data/
-/Análisis/Tutorial/
+
+# Excluimos credenciales de ngrok para exponer el db
+.env
